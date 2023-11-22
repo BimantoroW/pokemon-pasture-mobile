@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pokemon_pasture_mobile/screens/menu.dart';
 import 'package:pokemon_pasture_mobile/screens/catch_form.dart';
-import 'package:pokemon_pasture_mobile/screens/view_pokemon.dart';
+import 'package:pokemon_pasture_mobile/screens/list_pokemon_caught.dart';
+import 'package:pokemon_pasture_mobile/screens/menu.dart';
+import 'package:pokemon_pasture_mobile/screens/create_form.dart';
+import 'package:pokemon_pasture_mobile/screens/list_pokemon_all.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -52,19 +54,43 @@ class LeftDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.checklist),
-            title: const Text('View Pokémon'),
+            leading: const Icon(Icons.add_circle),
+            title: const Text('View All Pokémon'),
             // Bagian redirection ke ShopFormPage
             onTap: () {
               Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ViewPokemon(),
+                    builder: (context) => const ViewPokemonPage(),
                   ));
             },
           ),
           ListTile(
-            leading: const Icon(Icons.add_shopping_cart),
+            leading: const Icon(Icons.yard),
+            title: const Text('View Your Pokémon'),
+            // Bagian redirection ke ShopFormPage
+            onTap: () {
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ViewCaughtPage(),
+                  ));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.add_circle),
+            title: const Text('Create Pokémon'),
+            // Bagian redirection ke ShopFormPage
+            onTap: () {
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateFormPage(),
+                  ));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.add_home_work),
             title: const Text('Catch Pokémon'),
             // Bagian redirection ke ShopFormPage
             onTap: () {

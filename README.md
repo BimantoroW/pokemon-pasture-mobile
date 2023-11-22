@@ -521,3 +521,371 @@ Untuk tugas ini, saya baru memakai widget `TextFormField`. Saya menggunakan `Tex
       )
     );
     ```
+  
+# Tugas 9
+
+### Apakah bisa kita melakukan pengambilan data JSON tanpa membuat model terlebih dahulu? Jika iya, apakah hal tersebut lebih baik daripada membuat model sebelum melakukan pengambilan data JSON?
+Iya, JSON tetap dapat diambil tanpa model. Namun, pengambilan JSON tanpa model akan menyusahkan kita karena data dari JSON tidak bisa disimpan ke struktur data yang rapi sehingga kita harus lebih teliti dalam mengolahnya.
+
+### Jelaskan fungsi dari CookieRequest dan jelaskan mengapa instance CookieRequest perlu untuk dibagikan ke semua komponen di aplikasi Flutter.
+CookieRequest berfungsi untuk mengelola state dari user. CookieRequest akan menyimpan session user sehingga detail mengenai login user dapat dikirim ke web server django jika dibutuhkan. Instance CookieRequest perlu dibagikan ke semua komponen di Flutter karena kita membutuhkan satu instance CookieRequest yang sama sepanjang aplikasi berjalan. Jika kita membuat instance baru, detail mengenai user yang telah disimpan akan hilang.
+
+### Jelaskan mekanisme pengambilan data dari JSON hingga dapat ditampilkan pada Flutter.
+- Buat model di aplikasi Flutter untuk menyimpan data dari JSON yang nanti didapatkan
+- Kirimkan request kepada web server Django untuk meminta data yang diinginkan dalam bentuk JSON.
+- Parse JSON tersebut dan konversikan ke instance dari model yang telah dibuat
+- Tampilkan data yang telah di-parse menggunakan widget `FutureBuilder`.
+- Jika dalam tahap pengambilan data terjadi error, error tersebut akan di-handle oleh `FutureBuilder` dengan cara mengecek kondisional `snaspshot.hasError`
+
+### Jelaskan mekanisme autentikasi dari input data akun pada Flutter ke Django hingga selesainya proses autentikasi oleh Django dan tampilnya menu pada Flutter.
+- Buat metode view baru di aplikasi Django yang menerima post request dan data JSON di body request tersebut
+- Body request tersebut akan berisi username dan password dari user yang ingin login
+- Autentikasikan username dan password tersebut dengan method `authenticate` dari Django
+- Jika autentikasi berhasil, login user dengan method `login` dari Django agar session disimpan di server. Kemudian, kembalikan HTTP response dalam bentuk JSON dengan salah satu key-value pair berupa `status: True`.
+- Jika autentikasi tidak berhasil, kembalikan HTTP response dalam bentuk JSON dengan salah satu key-value pair berupa `status: False`
+- Di aplikasi Flutter, gunakan method `request.postJson` untuk membuat post request ke URL view yang telah dibuat, serta isi body dari request-nya dengan username dan password user.
+- Saat menerima response dari server, cek apakah `status` bernilai `True` atau `False`.
+- Jika bernilai `True`, navigasi aplikasi ke halaman `MyHomePage`
+- Jika bernilai `False`, tampilkan dialog box yang memberi informasi bahwa data login salah.
+
+### Sebutkan seluruh widget yang kamu pakai pada tugas ini dan jelaskan fungsinya masing-masing.
+Widget-widget baru:\
+- `FutureBuilder`: Widget yang membangun dirinya sendiri berdasarkan data terbaru dari objek `Future`
+- `Provider`: Widget yang dapat memberi suatu objek ke semua anak-anaknya
+- `SizedBox`: Widget untuk memberi jarak
+- `ListView`: Digunakan untuk menampilkan data banyak
+
+### Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step! (bukan hanya sekadar mengikuti tutorial).
+- [x] Memastikan deployment proyek tugas Django kamu telah berjalan dengan baik.\
+  Saya men-deploy ulang dan memperbaiki masalah-masalah yang ada.
+- [x] Membuat halaman login pada proyek tugas Flutter.\
+ Buat file baru bernama `login.dart` di folder `lib/screens`. Isi file tersebut dengan kode berikut.
+  ```
+  import 'package:pokemon_pasture_mobile/screens/menu.dart';
+  import 'package:flutter/material.dart';
+  import 'package:pbp_django_auth/pbp_django_auth.dart';
+  import 'package:provider/provider.dart';
+  import 'package:pokemon_pasture_mobile/screens/register.dart';
+
+  class LoginApp extends StatelessWidget {
+    const LoginApp({super.key});
+
+    @override
+    Widget build(BuildContext context) {
+      return MaterialApp(
+        title: 'Login',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: const LoginPage(),
+      );
+    }
+  }
+
+  class LoginPage extends StatefulWidget {
+    const LoginPage({super.key});
+
+    @override
+    _LoginPageState createState() => _LoginPageState();
+  }
+
+  class _LoginPageState extends State<LoginPage> {
+    final TextEditingController _usernameController = TextEditingController();
+    final TextEditingController _passwordController = TextEditingController();
+
+    @override
+    Widget build(BuildContext context) {
+      final request = context.watch<CookieRequest>();
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Login'),
+        ),
+        body: Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextField(
+                controller: _usernameController,
+                decoration: const InputDecoration(
+                  labelText: 'Username',
+                ),
+              ),
+              const SizedBox(height: 12.0),
+              TextField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 24.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      ...
+                    },
+                    child: const Text('Login'),
+                  ),
+                  const SizedBox(width: 12.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>  RegisterPage()));
+                    },
+                    child: const Text('Register'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
+  ```
+- [x] Mengintegrasikan sistem autentikasi Django dengan proyek tugas Flutter.\
+  - Buat app baru di Django bernama `authentication`.
+  - Tambah `authentication` ke `INSTALLED_APPS` pada `settings.py`
+  - Install package `django-cors-headers`
+  - Tambah `corsheaders` ke `INSTALLED_APPS` pada `settings.py`
+  - Tambah `corsheaders.middleware.CorsMiddleware` ke `MIDDLEWARE` pada `settings.py`
+  - Buat view baru untuk meng-handle login.
+    ```
+    @csrf_exempt
+    def login(request):
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                auth_login(request, user)
+                # Status login sukses.
+                return JsonResponse({
+                    "username": user.username,
+                    "pk": user.pk,
+                    "status": True,
+                    "message": "Login sukses!"
+                    # Tambahkan data lainnya jika ingin mengirim data ke Flutter.
+                }, status=200)
+            else:
+                return JsonResponse({
+                    "status": False,
+                    "message": "Login gagal, akun dinonaktifkan."
+                }, status=401)
+
+        else:
+            return JsonResponse({
+                "status": False,
+                "message": "Login gagal, periksa kembali email atau kata sandi."
+            }, status=401)
+    ```
+  - Hubungkan view tersebut dengan `urls.py`
+  - Pada file `login.dart`, tambahkan kode berikut di bagian `onPressed` dari tombol login.
+    ```
+    onPressed: () async {
+      String username = _usernameController.text;
+      String password = _passwordController.text;
+
+      // Cek kredensial
+      final response = await request
+          .login("http://localhost:8000/auth/login/", {
+        'username': username,
+        'password': password,
+      });
+
+      if (request.loggedIn) {
+        String message = response['message'];
+        String uname = response['username'];
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MyHomePage()),
+        );
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(
+              content: Text("$message Selamat datang, $uname.")));
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Login Gagal'),
+            content: Text(response['message']),
+            actions: [
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      }
+    },
+    ```
+  - Ubah `home: MyHomePage()` menjadi `home: LoginPage()` di file `main.dart`
+- [x] Membuat model kustom sesuai dengan proyek aplikasi Django.
+  - Buat model dengan bantuan https://app.quicktype.io/
+  - Copy dan paste data JSON dari model Django yang ingin dibuat di Flutter
+  - Beri nama model sesuai yang diinginkan
+  - Ubah bahasa yang digunakan menjadi Dart
+  - Copy dan paste kode yang dihasilkan pada aplikasi Flutter
+- [x] Membuat halaman yang berisi daftar semua item yang terdapat pada endpoint JSON di Django yang telah kamu deploy.
+  - Buat file baru bernama `list_pokemon_all.dart` di folder `lib/screens`. Isi file tersebut dengan kode berikut.
+    ```
+    import 'package:flutter/material.dart';
+    import 'package:pokemon_pasture_mobile/screens/pokemon_detail.dart';
+    import 'package:pokemon_pasture_mobile/widgets/left_drawer.dart';
+    import 'package:pokemon_pasture_mobile/models/pokemon.dart';
+    import 'package:http/http.dart' as http;
+    import 'dart:convert';
+
+    class ViewPokemonPage extends StatefulWidget {
+      const ViewPokemonPage({super.key});
+
+      @override
+      State<ViewPokemonPage> createState() => _ViewPokemonPageState();
+    }
+
+    class _ViewPokemonPageState extends State<ViewPokemonPage> {
+      late Future<List<Pokemon>> futureListPokemon;
+
+      @override
+      void initState() {
+        super.initState();
+        futureListPokemon = fetchPokemon();
+      }
+
+      @override
+      Widget build(BuildContext context) {
+        return Scaffold(
+            appBar: AppBar(
+              title: const Text('Product'),
+            ),
+            drawer: const LeftDrawer(),
+            body: FutureBuilder<List<Pokemon>>(
+                future: futureListPokemon,
+                builder: (context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasData) {
+                    List<Pokemon> list = snapshot.data! as List<Pokemon>;
+                    if (list.isEmpty) {
+                      return const Column(
+                        children: [
+                          Text(
+                            "Tidak ada data produk.",
+                            style:
+                                TextStyle(color: Color(0xff59A5D8), fontSize: 20),
+                          ),
+                          SizedBox(height: 8),
+                        ],
+                      );
+                    } else {
+                      return ListView.builder(
+                          itemCount: list.length,
+                          itemBuilder: (_, index) => InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => PokemonDetailPage(pokemon: list[index])));
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "${snapshot.data![index].fields.name}",
+                                      style: const TextStyle(
+                                        fontSize: 18.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )));
+                    }
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text('${snapshot.error}'),
+                    );
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                }));
+      }
+
+      Future<List<Pokemon>> fetchPokemon() async {
+        final response = await http.get(
+          Uri.parse('http://localhost:8000/json/'),
+          headers: {"Content-Type": "application/json"},
+        );
+
+        if (response.statusCode == 200) {
+          List<Pokemon> listPokemon = [];
+          var data = jsonDecode(utf8.decode(response.bodyBytes));
+          for (var d in data) {
+            if (data != null) {
+              listPokemon.add(Pokemon.fromJson(d));
+            }
+          }
+          return listPokemon;
+        } else {
+          throw Exception("Failed to load Pokémon");
+        }
+      }
+    }
+
+    ```
+- [x] Membuat halaman detail untuk setiap item yang terdapat pada halaman daftar Item.
+  - Buat file baru bernama `pokemon_detail.dart` di folder `lib/screens`. Isi file tersebut dengan kode berikut.
+    ```
+    import 'package:flutter/material.dart';
+    import 'package:pokemon_pasture_mobile/widgets/left_drawer.dart';
+    import 'package:pokemon_pasture_mobile/models/pokemon.dart';
+
+    class PokemonDetailPage extends StatelessWidget {
+      final Pokemon pokemon;
+      PokemonDetailPage({super.key, required this.pokemon});
+
+      @override
+      Widget build(BuildContext context) {
+        return Scaffold(
+            appBar: AppBar(
+              title: const Text("Details"),
+            ),
+            drawer: const LeftDrawer(),
+            body: Center(
+              child: Column(
+                children: [
+                  Text("Model: ${pokemon.model}"),
+                  const SizedBox(height: 10),
+                  Text("ID: ${pokemon.pk}"),
+                  const SizedBox(height: 10),
+                  Text("Name: ${pokemon.fields.name}"),
+                  const SizedBox(height: 10),
+                  Text("Pokedex Number: ${pokemon.fields.pokedexNumber}"),
+                  const SizedBox(height: 10),
+                  Text("Description: ${pokemon.fields.description}"),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Back'),
+                  ),
+                ],
+              ),
+            ));
+      }
+    }
+    ```

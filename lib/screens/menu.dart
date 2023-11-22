@@ -6,8 +6,10 @@ class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});
 
   final List<CardItem> items = [
-    CardItem("View Pokémon", Icons.checklist),
-    CardItem("Catch Pokémon", Icons.add_shopping_cart),
+    CardItem("View All Pokémon", Icons.checklist),
+    CardItem("View Your Pokémon", Icons.yard),
+    CardItem("Create Pokémon", Icons.add_circle),
+    CardItem("Catch Pokémon", Icons.add_home_work),
     CardItem("Logout", Icons.logout),
   ];
 
@@ -28,14 +30,14 @@ class MyHomePage extends StatelessWidget {
           child: Column(
             // Widget untuk menampilkan children secara vertikal
             children: <Widget>[
-              const Padding(
-                padding: EdgeInsets.only(bottom: 20),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
                 // Widget Text untuk menampilkan tulisan dengan alignment center dan style yang sesuai
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'Welcome, User', // Text yang menandakan toko
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
                     ),
@@ -48,7 +50,7 @@ class MyHomePage extends StatelessWidget {
                 primary: true,
                 crossAxisSpacing: 20,
                 mainAxisSpacing: 20,
-                crossAxisCount: 3,
+                crossAxisCount: 5,
                 shrinkWrap: true,
                 children: items.map((CardItem item) {
                   // Iterasi untuk setiap item

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:pokemon_pasture_mobile/screens/catch_form.dart';
-import 'package:pokemon_pasture_mobile/screens/view_pokemon.dart';
+import 'package:pokemon_pasture_mobile/screens/create_form.dart';
+import 'package:pokemon_pasture_mobile/screens/list_pokemon_all.dart';
+import 'package:pokemon_pasture_mobile/screens/list_pokemon_caught.dart';
+import 'package:pokemon_pasture_mobile/screens/login.dart';
+import 'package:provider/provider.dart';
 
 class CardItem {
   final String name;
@@ -16,23 +21,57 @@ class ButtonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+
     return Material(
       color: Colors.indigo,
       child: InkWell(
         // Area responsive terhadap sentuhan
-        onTap: () {
+        onTap: () async {
           // Memunculkan SnackBar ketika diklik
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(
                 content: Text("Kamu telah menekan tombol ${item.name}!")));
 
-          if (item.name == "View Pokémon") {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const ViewPokemon()));
+          if (item.name == "View All Pokémon") {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ViewPokemonPage()));
+          } else if (item.name == "View Your Pokémon") {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ViewCaughtPage()));
           } else if (item.name == "Catch Pokémon") {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const CatchFormPage()));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const CatchFormPage()));
+          } else if (item.name == "Create Pokémon") {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const CreateFormPage()));
+          } else if (item.name == "Logout") {
+            final response =
+                await request.logout("http://localhost:8000/auth/logout/");
+            String message = response["message"];
+            if (response['status']) {
+              String uname = response["username"];
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text("$message Sampai jumpa, $uname."),
+              ));
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(message),
+              ));
+            }
           }
         },
         child: Container(
